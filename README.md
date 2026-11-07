@@ -21,30 +21,46 @@ shield. Nothing in the addon runs every frame: the effects are the game's own an
 once and only played while the square is showing.
 Prefer it calm? `/vsv fx` turns the animations off (the square still glows, brighter at 10).
 
-## Sound packs
+## Soundboard
 
-Pick one with `/vsv pack 1`, `2` or `3`. It plays both sounds so you can hear it.
+Each sound pack has two cues: **ready** (your threshold, 7 by default) and **max** (10 stacks).
+`/vsv soundboard` lists them; `/vsv soundboard 2` picks one and plays both cues so you can hear it.
 
 ```
-1. Chimes    the harp chime; at 10 it cascades up three times into a shower of sparkles
-2. Birdsong  a little songbird; at 10 it sings higher and higher into a dawn chorus
-3. Ocean     a sonar ping; at 10 rising pings, bubbles, dolphins and a whale call
+1. Chimes    harp glissando; at 10 it climbs root, fifth, octave into sparkles over a G major chord
+2. Birdsong  a songbird's call; at 10 the phrase climbs three times into a trill and a dawn chorus
+3. Ocean     sonar ping and echo; at 10 rising pings (G, D, G), dolphins and a whale call
 ```
 
-All three are in the same key, so they sit nicely together. The 10-stack sound gently fades out
-the 7-stack one if it's still ringing.
+All three are in G major, so they sit nicely together. The max cue gently fades out the ready cue
+if it's still ringing. (`/vsv soundpack`, `/vsv sounds` and `/vsv audio` work too.)
 
 ## Install
 
-Replace the VoidShieldVortex folder in `World of Warcraft/_retail_/Interface/AddOns` and fully
-restart the game (new art and sounds are only loaded at startup). Your square keeps its position.
+Download `VoidShieldVortex-<version>.zip` from the
+[latest release](https://github.com/rlucas2100/void-shield/releases/latest) (or CurseForge) and
+unzip it into `World of Warcraft/_retail_/Interface/AddOns`. You should end up with:
+
+```
+Interface/AddOns/VoidShieldVortex/VoidShieldVortex.toc
+Interface/AddOns/VoidShieldVortex/VoidShieldLite.lua
+Interface/AddOns/VoidShieldVortex/media/...
+```
+
+The folder must be called exactly `VoidShieldVortex` (the same as the `.toc` file), or the game
+won't load it. GitHub's green "Code > Download ZIP" button gives you the whole project in a
+folder called `void-shield-main`, which won't work as an addon: use the release zip, or copy just
+the `VoidShieldVortex` folder from inside it.
+
+Then fully restart the game (not just `/reload`): new art and sound files only load at startup.
+Your square keeps its position.
 
 ## Commands (/vsv or /voidshield)
 
 ```
 /vsv test        try it: 7 stacks without a proc (nothing), proc (chime), 10 (phoenix), shield
 /vsv 7           chime at a proc + 7+ stacks (any number 3 to 10)
-/vsv pack        list the sound packs    /vsv pack 2   pick one and hear it
+/vsv soundboard  list the sound packs    /vsv soundboard 2   pick one and hear it
 /vsv fx          the 10-stack phoenix effects on/off
 /vsv unlock      drag the square where you want it; Ctrl + mouse wheel resizes. /vsv lock when done
 /vsv scale 1.1   set the size directly (0.5 to 4); /vsv scale + or - makes it 0.1 bigger or smaller
@@ -79,8 +95,9 @@ measured in open-world combat if it can; or set it yourself with that build load
 
 ## The art
 
-All drawn for this addon. The `.tga` files in `media/` are what the game uses; PNG copies are in
-[`docs/textures/`](docs/textures) so you can see them here.
+All drawn for this addon. The `.tga` files in `VoidShieldVortex/media/art/` are what the game uses;
+PNG copies are in [`docs/textures/`](docs/textures) so you can see them here. The scripts that
+draw the art, render the soundboard and build the release zip are in [`tools/`](tools).
 
 | Void vortex (7+) | Supercharged (10) | Frame | Phoenix wings | Flame crown |
 | :---: | :---: | :---: | :---: | :---: |

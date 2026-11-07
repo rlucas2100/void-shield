@@ -1,2 +1,4 @@
 backup_v*/
 *.zip
+__pycache__/
+snd/

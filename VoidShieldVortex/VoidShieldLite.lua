@@ -4,8 +4,8 @@
     proc + 7 stacks  : a glowing cartoon void vortex pops up and spins, the stack count on its
                        left edge, and one chime
     proc + 10 stacks : it supercharges into a purple phoenix (wings, flames, lightning, sparks, a
-                       strong glow) and the chime cascades upward three times (or the bird / ocean
-                       sound pack's version)
+                       strong glow) and the chime cascades upward three times (or the birdsong /
+                       ocean version, picked on the soundboard: /vsv soundboard)
   No proc = no square, no sound. 8 and 9 are silent. Nothing in the addon runs every frame: the
   effects are the game's own animations, and they only play while the square is showing.
 
@@ -20,6 +20,7 @@
 
 local ADDON, ns = ...
 local M = "Interface\\AddOns\\" .. ADDON .. "\\media\\"
+local ART, SOUNDS, FONTS = M .. "art\\", M .. "sounds\\", M .. "fonts\\"
 local FONT = "Fonts\\FRIZQT__.TTF"
 local SIZE = 56
 local NUM_SIZE = 30               -- the stack number, on the left edge of the square
@@ -34,19 +35,20 @@ local floor, min, max = math.floor, math.min, math.max
 
 local DEFAULTS = { threshold = 7, sound = true, maxSound = true, channel = "Master", scale = 1,
                    point = "CENTER", relPoint = "CENTER", x = 0, y = -120,
-                   bolts = nil, debug = false, pack = "chimes", fx = true }
+                   bolts = nil, debug = false, soundpack = "chimes", fx = true }
 
--- sound packs: one sound at the threshold (7), a bigger one at 10
-local PACKS = {
-	{ key = "chimes", name = "Chimes", ready = "ready", max = "max",
-	  about = "harp chime; at 10 it cascades up three times into a shower of sparkles" },
-	{ key = "birds", name = "Birdsong", ready = "bird_ready", max = "bird_max",
-	  about = "a little songbird; at 10 it sings higher and higher into a dawn chorus" },
-	{ key = "ocean", name = "Ocean", ready = "ocean_ready", max = "ocean_max",
-	  about = "sonar ping; at 10 rising pings, bubbles, dolphins and a whale call" },
+-- the soundboard: each sound pack has a "ready" cue (your threshold, 7 by default) and a "max"
+-- cue (10 stacks). Files: media/sounds/<pack>_ready.ogg and <pack>_max.ogg. All in G major.
+local SOUNDBOARD = {
+	{ key = "chimes", name = "Chimes",
+	  about = "harp glissando; at 10 it climbs root, fifth, octave into sparkles over a G major chord" },
+	{ key = "birdsong", name = "Birdsong",
+	  about = "a songbird's call; at 10 the phrase climbs three times into a trill and a dawn chorus" },
+	{ key = "ocean", name = "Ocean",
+	  about = "sonar ping and echo; at 10 rising pings (G, D, G), dolphins and a whale call" },
 }
-local PACK_ALIASES = { chime = "chimes", bird = "birds", birdsong = "birds", sea = "ocean",
-                       whale = "ocean", dolphin = "ocean", sonar = "ocean" }
+local SOUNDPACK_ALIASES = { chime = "chimes", harp = "chimes", bird = "birdsong", birds = "birdsong",
+                            sea = "ocean", whale = "ocean", dolphin = "ocean", sonar = "ocean" }
 local db
 local anchor, sq                  -- the square (built at login)
 
@@ -391,7 +393,7 @@ local function BuildEngine()
 			button:SetIcon(icon)
 			-- the game writes her real Weal and Woe count here (our font draws nothing below 7)
 			local count = button:CreateFontString(nil, "OVERLAY")
-			count:SetFont(M .. "num" .. db.threshold .. ".ttf", NUM_SIZE, "THICKOUTLINE")
+			count:SetFont(FONTS .. "num" .. db.threshold .. ".ttf", NUM_SIZE, "THICKOUTLINE")
 			count:SetPoint("RIGHT", button, "LEFT", NUM_X, 0)
 			count:SetTextColor(1, 0.9, 0.4)
 			button:SetApplicationCount(count)
@@ -413,18 +415,18 @@ end
 ---------------------------------------------------------------------------
 -- Sound
 ---------------------------------------------------------------------------
-local function Pack()
-	for _, p in ipairs(PACKS) do if p.key == db.pack then return p end end
-	return PACKS[1]
+local function SoundPack()
+	for _, p in ipairs(SOUNDBOARD) do if p.key == db.soundpack then return p end end
+	return SOUNDBOARD[1]
 end
 local soundHandle
--- stopPrevious: the 10-stack sound gently fades out a 7-stack sound that's still ringing
-local function PlayFile(file, stopPrevious)
-	if stopPrevious and soundHandle and StopSound then pcall(StopSound, soundHandle, 300) end
-	local ok, willPlay, handle = pcall(PlaySoundFile, M .. file .. ".ogg", db.channel)
+-- cue: "ready" or "max". The max cue gently fades out a ready cue that's still ringing.
+local function PlayCue(pack, cue)
+	if cue == "max" and soundHandle and StopSound then pcall(StopSound, soundHandle, 300) end
+	local ok, willPlay, handle = pcall(PlaySoundFile, SOUNDS .. pack.key .. "_" .. cue .. ".ogg", db.channel)
 	soundHandle = (ok and willPlay) and handle or nil
 end
-local function Play(kind) if db.sound then PlayFile(Pack()[kind], kind == "max") end end
+local function Play(cue) if db.sound then PlayCue(SoundPack(), cue) end end
 
 ---------------------------------------------------------------------------
 -- The square: a cartoon force-field shield. At 10 stacks it bursts into a phoenix: wings, flames,
@@ -443,7 +445,7 @@ local EMBERS = { { -0.30, 0.9, 0.1 }, { 0.08, 1.1, 0.45 }, { 0.36, 0.8, 0.75 } }
 
 local function Tex(parent, file, layer, sub, w, h, blend)
 	local t = parent:CreateTexture(nil, layer, nil, sub)
-	t:SetTexture(M .. file)
+	t:SetTexture(ART .. file)
 	t:SetSize(w, h)
 	t:SetPoint("CENTER")
 	if blend then t:SetBlendMode(blend) end
@@ -670,7 +672,7 @@ local function BuildSquare()
 	BuildArt()
 	-- the stack number sits on the box's left edge, with a soft dark patch behind it to read well
 	sq.numBack = sq.top:CreateTexture(nil, "BACKGROUND")
-	sq.numBack:SetTexture(M .. "glow") sq.numBack:SetVertexColor(0, 0, 0)
+	sq.numBack:SetTexture(ART .. "glow") sq.numBack:SetVertexColor(0, 0, 0)
 	sq.numBack:SetSize(0.95 * SIZE, 0.78 * SIZE)
 	sq.numBack:SetPoint("CENTER", sq, "LEFT", -0.2 * SIZE, 0)
 	sq.count = sq.top:CreateFontString(nil, "OVERLAY")
@@ -678,7 +680,7 @@ local function BuildSquare()
 	sq.count:SetPoint("RIGHT", sq, "LEFT", NUM_X, 0)
 	sq.count:SetTextColor(1, 0.9, 0.4)
 	sq.drag = sq.top:CreateTexture(nil, "OVERLAY", nil, 7)
-	sq.drag:SetAllPoints() sq.drag:SetTexture(M .. "boxmask") sq.drag:SetVertexColor(0.7, 0.4, 1)
+	sq.drag:SetAllPoints() sq.drag:SetTexture(ART .. "boxmask") sq.drag:SetVertexColor(0.7, 0.4, 1)
 	sq.drag:SetAlpha(0.35) sq.drag:Hide()
 	sq:RegisterForDrag("LeftButton")
 	sq:SetScript("OnDragStart", function() anchor:StartMoving() end)
@@ -819,6 +821,10 @@ E:SetScript("OnEvent", function(_, ev, a1, _, spellID)
 			for _, b in pairs(db.builds or {}) do if not b.locked then b.bolts, b.samples = nil, nil end end
 			db.v55 = true
 		end
+		if db.pack then                      -- 6.0 previews called it "pack" (and "birds")
+			db.soundpack = (db.pack == "birds") and "birdsong" or db.pack
+			db.pack = nil
+		end
 		for k, v in pairs(DEFAULTS) do if db[k] == nil then db[k] = v end end
 		return
 	end
@@ -841,7 +847,7 @@ E:SetScript("OnEvent", function(_, ev, a1, _, spellID)
 			end
 			Update()
 		end)
-		Print(("shield + chime when you have a Void Shield proc and %d+ Weal and Woe; a phoenix at 10. |cffffd27f/vsv test|r to try it, |cffffd27f/vsv pack|r for sound packs."):format(db.threshold))
+		Print(("void vortex + chime when you have a Void Shield proc and %d+ Weal and Woe; a phoenix at 10. |cffffd27f/vsv test|r to try it, |cffffd27f/vsv soundboard|r to pick your sounds."):format(db.threshold))
 		local loaded = C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded("WealWoeAlert")
 		if loaded then Print("Weal & Woe Alert is also on and makes its own sounds. Disable it (or /ww sound) so you only hear this one.") end
 	elseif ev == "PLAYER_REGEN_ENABLED" then
@@ -896,28 +902,28 @@ SlashCmdList.VOIDSHIELDLITE = function(msg)
 		local at = 0
 		for _, s in ipairs(steps) do C_Timer.After(at, function() ns.test = s Update() end) at = at + s.t end
 		C_Timer.After(at, function() ns.test = nil Update() end)
-	elseif cmd == "pack" or cmd == "sounds" then
-		local want = PACK_ALIASES[a] or a
+	elseif cmd == "soundboard" or cmd == "soundpack" or cmd == "sounds" or cmd == "audio" then
+		local want = SOUNDPACK_ALIASES[a] or a
 		local pick
-		for i, p in ipairs(PACKS) do
+		for i, p in ipairs(SOUNDBOARD) do
 			if want == p.key or want == p.name:lower() or tonumber(want) == i then pick = p end
 		end
 		if not pick then
-			Print("sound packs (|cffffd27f/vsv pack 2|r picks one and plays it for you):")
-			for i, p in ipairs(PACKS) do
-				Print(("  %d. %s%s - %s"):format(i, p.name, p == Pack() and " |cff7fff7f(on)|r" or "", p.about))
+			Print("soundboard (|cffffd27f/vsv soundboard 2|r picks a sound pack and plays it for you):")
+			for i, p in ipairs(SOUNDBOARD) do
+				Print(("  %d. %s%s - %s"):format(i, p.name, p == SoundPack() and " |cff7fff7f(playing)|r" or "", p.about))
 			end
 		else
-			db.pack = pick.key
-			Print(("sound pack: %s. Here's the %d-stack sound, then the 10-stack one%s"):format(pick.name, db.threshold,
+			db.soundpack = pick.key
+			Print(("sound pack: %s. Here's the %d-stack cue, then the 10-stack cue%s"):format(pick.name, db.threshold,
 				db.sound and "" or " (your sounds are off: /vsv sound turns them on)"))
-			PlayFile(pick.ready)
-			C_Timer.After(2.2, function() PlayFile(pick.max, true) end)
+			PlayCue(pick, "ready")
+			C_Timer.After(2.2, function() PlayCue(pick, "max") end)
 		end
 	elseif cmd == "fx" then
 		db.fx = not db.fx
 		ns:RefreshLook()
-		Print("10-stack phoenix effects (wings, flames, lightning, sparks) " .. (db.fx and "ON" or "OFF: the square just turns gold, with a still glow"))
+		Print("10-stack phoenix effects (wings, flames, lightning, sparks) " .. (db.fx and "ON" or "OFF: no animations, the square still glows (brighter at 10)"))
 	elseif cmd == "unlock" then
 		ns.unlocked = true sq:EnableMouse(true) sq:EnableMouseWheel(true) sq.drag:Show() shownKey = "redraw" Update()
 		Print("drag the square where you want it (Ctrl + mouse wheel resizes), then /vsv lock")
@@ -967,12 +973,12 @@ SlashCmdList.VOIDSHIELDLITE = function(msg)
 			db.buttonWorks and " (checked: reliable)" or " (not checked yet)"))
 		Print(("in instances, reading the game's own frames: Weal and Woe %s, Void Shield %s"):format(
 			probe.wwProven and "yes (exact)" or "not yet", probe.vsProven and "yes (exact)" or "not yet"))
-		Print(("sound pack: %s (/vsv pack), sounds %s; 10-stack phoenix effects %s (/vsv fx)"):format(
-			Pack().name, db.sound and "on" or "off", db.fx and "on" or "off"))
+		Print(("sound pack: %s (/vsv soundboard), sounds %s; 10-stack phoenix effects %s (/vsv fx)"):format(
+			SoundPack().name, db.sound and "on" or "off", db.fx and "on" or "off"))
 	else
 		Print("/vsv test - try it      /vsv 7 - chime at a proc + 7+ stacks (3-10)")
 		Print("/vsv unlock - move it (Ctrl + wheel resizes), /vsv lock      /vsv scale 1.1 (or + / -)")
-		Print("/vsv pack - sound packs: chimes, birdsong, ocean      /vsv fx - 10-stack phoenix effects on/off")
+		Print("/vsv soundboard - sound packs: chimes, birdsong, ocean      /vsv fx - 10-stack phoenix effects on/off")
 		Print("/vsv sound | max | stacks 7 (per Penance, this talent build) | status | debug | reset")
 	end
 end

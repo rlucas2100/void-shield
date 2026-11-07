@@ -1,5 +1,5 @@
 """Void Shield Lite sound packs. Everything sits in G major so the packs feel related.
-chimes: ready = the existing chime (untouched); max = that chime 3x cascading up + sparkles + warm bloom
+chimes  : ready = the original chime (untouched); max = that chime 3x cascading up + sparkles + warm bloom
 birds  : ready = a little song phrase;         max = the phrase 3x climbing + trill + answering birds
 ocean  : ready = sonar ping + echo;            max = 3 rising pings + bubbles + dolphins + whale call"""
 import math, os, sys
@@ -155,7 +155,7 @@ def pitch(x, up, down):
 # ---------------------------------------------------------------------------------------------
 # 1. CHIMES max: the ready chime 3x, cascading root -> fifth -> octave, then sparkles + bloom
 # ---------------------------------------------------------------------------------------------
-ready, sr0 = sf.read(os.path.join(MEDIA, 'ready.ogg'))
+ready, sr0 = sf.read(os.path.join(MEDIA, 'chimes_ready.ogg'))
 assert sr0 == SR
 if ready.ndim > 1:
     ready = ready.mean(1)
@@ -181,7 +181,7 @@ place(out, st, t + 0.04, 0.12, 0.15)
 place(out, bell(F['D7'], 1.6, 0.004, 0.6, 0.4), t + 0.06, 0.09, -0.15)
 out = reverb(out, rt60=1.9, wet=0.30, pre=0.02, damp=7000, seed=3)
 out = lowpass(out, 12500, 1)
-write('max', finish(out, -13.8))
+write('chimes_max', finish(out, -13.8))
 
 
 # ---------------------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ place(b, phrase(-5), 0.05, 0.9, 0.1)
 # a soft distant reply from another bird
 place(b, phrase(-9, 1.1), 0.95, 0.22, -0.7)
 b = reverb(b, rt60=0.9, wet=0.2, pre=0.012, damp=9000, seed=5)
-write('bird_ready', finish(b, -14.5))
+write('birdsong_ready', finish(b, -14.5))
 
 b = buf(4.2)
 # the phrase three times, each a step higher and a little quicker: D, G, B (cascading up)
@@ -250,7 +250,7 @@ for j in range(9):
     place(b, syl(f, f * rng.uniform(0.75, 1.3), rng.uniform(0.04, 0.11), 1.0), tt, rng.uniform(0.08, 0.16),
           rng.uniform(-0.9, 0.9))
 b = reverb(b, rt60=1.1, wet=0.24, pre=0.012, damp=9000, seed=6)
-write('bird_max', finish(b, -13.8))
+write('birdsong_max', finish(b, -13.8))
 
 
 # ---------------------------------------------------------------------------------------------
