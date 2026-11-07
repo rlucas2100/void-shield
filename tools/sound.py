@@ -1,6 +1,6 @@
 """Void Shield Lite sound packs. Everything sits in G major so the packs feel related.
-chimes  : ready = the original chime (untouched); max = that chime 3x cascading up + sparkles + warm bloom
-birds  : ready = a little song phrase;         max = the phrase 3x climbing + trill + answering birds
+chimes  : cartoon music-box notes; ready = a quick rising G figure, max = a two-octave run + ta-DING
+birdsong: ready = a real rufous-naped wren call; max = a real Eurasian wren's sharp song
 ocean  : ready = sonar ping + echo;            max = 3 rising pings + bubbles + dolphins + whale call"""
 import math, os, sys
 import numpy as np
@@ -92,13 +92,14 @@ def reverb(x, rt60=1.6, wet=0.25, pre=0.018, damp=6000, seed=1, er=True):
     return out + wetsig * wet
 
 
-def finish(x, lufs=-14.5, fade=0.3):
+def finish(x, lufs=-14.5, fade=0.3, soft=True):
     """clean up, trim the silent tail, soft-limit, and match perceived loudness (LUFS)"""
     import pyloudnorm as pyln
     x = x - x.mean(0)
     x = highpass(x, 60, 2)
     x = x / np.abs(x).max()
-    x = np.tanh(x * 1.15) / np.tanh(1.15)                           # gentle soft clip
+    if soft:
+        x = np.tanh(x * 1.15) / np.tanh(1.15)                       # gentle soft clip
     env = np.convolve(np.abs(x).max(1), np.ones(441) / 441, 'same')
     alive = np.where(env > 10 ** (-48 / 20))[0]                       # -48 dB below peak = done
     x = x[:alive[-1] + int(0.05 * SR)] if len(alive) else x
@@ -153,104 +154,104 @@ def pitch(x, up, down):
 
 
 # ---------------------------------------------------------------------------------------------
-# 1. CHIMES max: the ready chime 3x, cascading root -> fifth -> octave, then sparkles + bloom
+# 1. CHIMES: bright cartoon music-box notes (the same tone as the SunwellInfusion chime: pure
+#    harmonic overtones, near-instant attack, ~0.23 s decay, dry), with Void Shield's own melodies
+#    ready: G5 -> D6 -> G6 -> B6, with a G7 sparkle
+#    max  : a quick two-octave run G5 .. G7, a bright "ta-DING" chord, then two twinkles on top
 # ---------------------------------------------------------------------------------------------
-ready, sr0 = sf.read(os.path.join(MEDIA, 'chimes_ready.ogg'))
-assert sr0 == SR
-if ready.ndim > 1:
-    ready = ready.mean(1)
-ready = ready / np.abs(ready).max()
-
-out = buf(4.2)
-place(out, ready, 0.00, 0.78, -0.25)
-place(out, lowpass(pitch(ready, 2, 3), 11000), 0.27, 0.62, 0.25)        # +7 (a fifth), 1.5x faster
-place(out, lowpass(pitch(ready, 1, 2), 8000), 0.48, 0.46, 0.0)          # +12 (an octave), 2x faster
-# warm bloom: G major chord swelling in under the last run
-for nm, g in (('G4', 0.20), ('B4', 0.13), ('D5', 0.14), ('G5', 0.12)):
-    place(out, epiano(F[nm], 2.6, 0.05, 1.1), 0.62, g, rng.uniform(-0.3, 0.3))
-place(out, epiano(F['G3'], 2.6, 0.08, 1.2), 0.62, 0.10, 0)
-# the jackpot sparkle: a quick rising pentatonic cascade of tiny bells, accelerating
-seq = ['G6', 'A6', 'B6', 'D7', 'E7', 'G7', 'A7', 'B7']
-t = 0.66
-for i, nm in enumerate(seq):
-    place(out, bell(F[nm], 1.0, 0.002, 0.22, 0.6), t, 0.17 - i * 0.008, -0.6 if i % 2 else 0.6)
-    t += 0.085 - i * 0.006
-# final star: top G with a shimmering tremolo, plus its octave-below partner
-st = bell(F['G7'], 1.6, 0.004, 0.55, 0.4) * (1 + 0.35 * np.sin(2 * math.pi * 11 * np.arange(int(1.6 * SR)) / SR))
-place(out, st, t + 0.04, 0.12, 0.15)
-place(out, bell(F['D7'], 1.6, 0.004, 0.6, 0.4), t + 0.06, 0.09, -0.15)
-out = reverb(out, rt60=1.9, wet=0.30, pre=0.02, damp=7000, seed=3)
-out = lowpass(out, 12500, 1)
-write('chimes_max', finish(out, -13.8))
-
-
-# ---------------------------------------------------------------------------------------------
-# 2. BIRDS
-# ---------------------------------------------------------------------------------------------
-def syl(f0, f1, dur, curve=1.0, att=0.006, rel=0.02, vib=0.0, vib_hz=0.0, trill=0.0, trill_hz=0.0,
-        harm=(1.0, 0.12, 0.04), shape=None):
-    """one bird syllable: a whistled glide (pure tone + a touch of harmonics)"""
+def tone(f, dur=1.4, tau=0.23):
+    """one cartoony note: fundamental + in-tune 2x/3x/4x/5x overtones, 2.5 ms attack, smooth decay"""
     n = int(dur * SR)
     t = np.arange(n) / SR
-    u = t / dur
-    fr = f0 + (f1 - f0) * (u ** curve if shape is None else shape(u))
-    if vib:
-        fr = fr * (1 + vib * np.sin(2 * math.pi * vib_hz * t))
-    ph = 2 * math.pi * np.cumsum(fr) / SR
-    x = sum(g * np.sin(ph * (k + 1)) for k, g in enumerate(harm))
-    e = np.minimum(1, t / att) * np.minimum(1, (dur - t) / rel)
-    e = np.clip(e, 0, 1) ** 1.5
-    if trill:
-        e = e * (1 - trill * (0.5 + 0.5 * np.cos(2 * math.pi * trill_hz * t)))
-    return x * e
+    x = np.zeros(n)
+    for h, g, td in ((1, 1.0, 1.0), (2, 0.355, 1.0), (3, 0.10, 0.95), (4, 0.05, 0.4), (5, 0.02, 0.85)):
+        if f * h < 15000:
+            x += g * np.sin(2 * math.pi * f * h * t) * np.exp(-t / (tau * td))
+    att = int(0.0025 * SR)
+    x[:att] *= np.sin(np.linspace(0, math.pi / 2, att)) ** 2
+    return x
 
 
-def phrase(sh=0.0, speed=1.0):
-    """'tsip-tsip-tweee!': two quick up-slurs then a sweet rising whistle. sh = semitones."""
-    k = 2 ** (sh / 12)
-    out = np.zeros(int(1.1 * SR))
-    def put(x, t, g=1.0):
-        i = int(t * SR / speed)
-        out[i:i + len(x)] += x[:len(out) - i] * g
-    put(syl(2600 * k, 3900 * k, 0.055 / speed, 0.7), 0.00, 0.8)
-    put(syl(2700 * k, 4100 * k, 0.055 / speed, 0.7), 0.11, 0.85)
-    # the 'tweee': G7 gliding up to B7 with a little vibrato, swelling then softening
-    sw = syl(F['G7'] * k * 0.94, F['B7'] * k, 0.30 / speed, shape=lambda u: 1 - (1 - u) ** 2.2,
-             att=0.03, rel=0.08, vib=0.012, vib_hz=26)
-    put(sw, 0.24, 1.0)
-    put(syl(F['B7'] * k, F['G7'] * k * 0.98, 0.06 / speed, 1.0, rel=0.03), 0.24 + 0.33, 0.55)
-    return out
+def chime_mix(notes, length):
+    out = np.zeros(int(length * SR))
+    for nm, t0, g in notes:
+        x = tone(F[nm]) * g
+        i = int(t0 * SR)
+        out[i:i + len(x)] += x[:len(out) - i]
+    return lowpass(out, 5200, 1)                    # the soft, rounded top of the Sunwell chime
 
 
-b = buf(2.4)
-place(b, phrase(-5), 0.05, 0.9, 0.1)
-# a soft distant reply from another bird
-place(b, phrase(-9, 1.1), 0.95, 0.22, -0.7)
-b = reverb(b, rt60=0.9, wet=0.2, pre=0.012, damp=9000, seed=5)
-write('birdsong_ready', finish(b, -14.5))
+ready = chime_mix([('G5', 0.000, 0.80), ('D6', 0.065, 0.78), ('G6', 0.130, 0.76), ('B6', 0.195, 0.74),
+                   ('G7', 0.430, 0.42)], 1.6)
+write('chimes_ready', finish(np.stack([ready, ready], 1), -14.5, fade=0.2, soft=False))
 
-b = buf(4.2)
-# the phrase three times, each a step higher and a little quicker: D, G, B (cascading up)
-for i, (sh, sp, t0, pan) in enumerate(((-10, 1.0, 0.00, -0.35), (-5, 1.12, 0.55, 0.35), (-1, 1.25, 1.02, 0.0))):
-    place(b, phrase(sh, sp), t0, 0.62 + 0.08 * i, pan)
-# a canary trill climbing to the top
-t = 1.48
-for i in range(16):
-    f = 2400 * (2 ** (i / 13))
-    place(b, syl(f, f * 1.22, 0.024, 0.8, att=0.003, rel=0.008), t, 0.42, 0.2 * math.sin(i))
-    t += 0.031
-# 'tweet-tweet!' at the top: B7 -> D8 bright pair, then a long happy G7 whistle with vibrato
-place(b, syl(F['B7'] * 0.96, F['D8'], 0.07, 0.6), t + 0.03, 0.55, 0.1)
-place(b, syl(F['B7'] * 0.96, F['D8'], 0.07, 0.6), t + 0.15, 0.55, -0.1)
-place(b, syl(F['G7'] * 1.03, F['G7'], 0.55, 1.0, att=0.02, rel=0.25, vib=0.018, vib_hz=18), t + 0.3, 0.42, 0)
-# dawn chorus: other birds joining in the background
-for j in range(9):
-    f = rng.uniform(2600, 4600)
-    tt = rng.uniform(1.2, 2.9)
-    place(b, syl(f, f * rng.uniform(0.75, 1.3), rng.uniform(0.04, 0.11), 1.0), tt, rng.uniform(0.08, 0.16),
-          rng.uniform(-0.9, 0.9))
-b = reverb(b, rt60=1.1, wet=0.24, pre=0.012, damp=9000, seed=6)
-write('birdsong_max', finish(b, -13.8))
+run = ['G5', 'B5', 'D6', 'G6', 'B6', 'D7', 'G7']
+notes = [(nm, 0.045 * i, 0.74 - 0.035 * i) for i, nm in enumerate(run)]
+notes += [('G5', 0.36, 0.42), ('G6', 0.36, 0.40), ('B6', 0.36, 0.34), ('D7', 0.36, 0.32)]   # ta-DING
+notes += [('B7', 0.53, 0.30), ('D8', 0.62, 0.22)]                                           # twinkles
+mx = chime_mix(notes, 1.6)
+write('chimes_max', finish(np.stack([mx, mx], 1), -13.8, fade=0.2, soft=False))
+
+
+# ---------------------------------------------------------------------------------------------
+# 2. BIRDSONG: real field recordings (public domain / CC0, see tools/sources/README.md)
+#    ready: a rufous-naped wren's sweet "whee-too" whistle, nudged up a semitone to sit in G major
+#    max  : a Eurasian wren's sharp song: six bright down-swept zips into a rapid run of chips
+# ---------------------------------------------------------------------------------------------
+SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sources')
+
+
+def recording(name, start, end):
+    x, sr = sf.read(os.path.join(SRC, name), always_2d=True)
+    x = x.mean(1)
+    if sr != SR:
+        g = math.gcd(SR, sr)
+        x = signal.resample_poly(x, SR // g, sr // g)
+    return x[int(start * SR):int(end * SR)]
+
+
+def denoise(x, hp, strength=1.6, floor=0.08):
+    """high-pass away the rumble, then gentle spectral gating against the recording's own hiss"""
+    b_, a_ = signal.butter(4, hp / (SR / 2), 'high')
+    x = signal.filtfilt(b_, a_, x)
+    f, t, Z = signal.stft(x, SR, nperseg=1024, noverlap=768)
+    mag = np.abs(Z)
+    frame = mag.sum(0)
+    quiet = mag[:, frame <= np.percentile(frame, 25)]
+    noise = np.median(quiet, axis=1, keepdims=True)
+    gain = np.clip(1 - strength * noise / np.maximum(mag, 1e-9), floor, 1)
+    gain = ndimage_smooth(gain)
+    _, y = signal.istft(Z * gain, SR, nperseg=1024, noverlap=768)
+    return y[:len(x)]
+
+
+def ndimage_smooth(g):
+    from scipy import ndimage
+    return ndimage.uniform_filter(g, size=(3, 5))
+
+
+def edges(x, fade_in=0.015, fade_out=0.12):
+    x = x.copy()
+    i, o = int(fade_in * SR), int(fade_out * SR)
+    x[:i] *= np.linspace(0, 1, i) ** 2
+    x[-o:] *= np.linspace(1, 0, o) ** 2
+    return x
+
+
+# ready: "whee-too", one semitone up (17/16) so its notes land on D and A
+call = denoise(recording('rufous-naped_wren.mp3', 1.30, 2.45), hp=1300)
+call = edges(signal.resample_poly(call, 16, 17))
+b = buf(1.8)
+place(b, call, 0.02, 1.0, 0.0)
+b = reverb(b, rt60=0.7, wet=0.12, pre=0.01, damp=9000, seed=5)
+write('birdsong_ready', finish(b, -14.5, fade=0.12))
+
+# max: the wren's sharp burst, untouched in pitch: crisp zips (7 -> 4 kHz) into rapid chips
+wren = edges(denoise(recording('eurasian_wren.ogg', 1.05, 3.05), hp=3200, strength=1.8), 0.01, 0.18)
+b = buf(2.6)
+place(b, wren, 0.02, 1.0, 0.0)
+b = reverb(b, rt60=0.6, wet=0.10, pre=0.008, damp=10000, seed=6)
+write('birdsong_max', finish(b, -13.8, fade=0.15))
 
 
 # ---------------------------------------------------------------------------------------------

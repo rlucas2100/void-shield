@@ -2,3 +2,4 @@ backup_v*/
 *.zip
 __pycache__/
 snd/
+curseforge_upload/

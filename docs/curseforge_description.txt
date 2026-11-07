@@ -1,0 +1,41 @@
+Void Shield Lite
+
+For Discipline Priests: know at a glance when your Void Shield is worth casting.
+
+When you have a Void Shield proc (Master the Darkness) and Weal and Woe is at 7 or more stacks, a glowing cartoon void vortex pops up and slowly spins, with your stack count in big numbers on its left edge, and a chime plays.
+
+At 10 stacks, when your shield is at its most powerful, it supercharges into a purple phoenix: wings unfurl, violet flames rise, lightning crackles, sparks fly, the glow pulses and the vortex spins fast, with a bright music-box run.
+
+No proc means no square and no sound, even at 10 stacks. 8 and 9 stay silent. It disappears as soon as you cast your shield.
+
+Soundboard
+Pick the sound pack that suits you. Each has a cue for 7 stacks and a bigger one for 10.
+1. Chimes: cartoon music-box notes rising in G, and at 10 a quick two-octave run into a bright ta-DING.
+2. Birdsong: real wren recordings, a sweet whistled call, and at 10 a wren's sharp, bright song.
+3. Ocean: a sonar ping with an echo, and at 10 rising pings, dolphins and a whale call.
+Type /vsv soundboard to list them, and /vsv soundboard 2 to pick one and hear it.
+
+Works in raids, dungeons and Mythic+
+The game hides buff details from addons there, so Void Shield Lite lets the game draw your real stack number in the square, reads your Void Shield proc from your Power Word: Shield button, and times the sounds from your Penance bolts (measured in the open world, remembered per talent build). Get a proc and some Weal and Woe stacks in the open world once, and /vsv status will show both buffs as confirmed.
+
+Light on performance
+Nothing in the addon runs every frame. The effects are the game's own animations and only play while the square is showing. Prefer it calm? /vsv fx turns the animations off and the square still glows.
+
+Commands (/vsv or /voidshield)
+/vsv test : try it out (7 stacks without a proc, a proc, 10 stacks, then your shield)
+/vsv soundboard : choose your sound pack
+/vsv 7 : the stack count that triggers the square and chime (3 to 10)
+/vsv unlock : drag the square where you want it (Ctrl + mouse wheel resizes), then /vsv lock
+/vsv scale 1.1 : set the size (0.5 to 4), or /vsv scale + and /vsv scale - to step it
+/vsv fx : phoenix effects on or off
+/vsv sound : all sounds on or off
+/vsv max : the 10-stack sound on or off
+/vsv stacks 7 : how many stacks one Penance gives with your talents (/vsv stacks auto to measure it)
+/vsv status : what it's watching
+/vsv debug : print every change in chat
+
+Install
+Unzip into World of Warcraft/_retail_/Interface/AddOns so you have a folder called VoidShieldVortex, then fully restart the game.
+
+Credits
+Made by Orion. Art and the chimes and ocean sounds were made for this addon. The Birdsong pack uses two free field recordings from Wikimedia Commons: a rufous-naped wren by Nosferattus (CC0) and a Eurasian wren by Sogning Norway (public domain).
