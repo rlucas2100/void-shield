@@ -5,7 +5,7 @@
 Tells you when your Void Shield is worth casting: you have a Void Shield proc (Master the
 Darkness) AND Weal and Woe is at 7 or more stacks.
 
-![The square at 7 stacks and at 10 stacks](docs/preview.png)
+![In game: the void vortex at 7 stacks and the purple phoenix at 10](docs/screenshots/gallery_3_closeup.png)
 
 ```
 proc + 7 stacks   : a glowing cartoon void vortex pops up and slowly spins, and one chime
@@ -20,6 +20,12 @@ The stack count sits big on the left edge of the square. It disappears when you 
 shield. Nothing in the addon runs every frame: the effects are the game's own animations, built
 once and only played while the square is showing.
 Prefer it calm? `/vsv fx` turns the animations off (the square still glows, brighter at 10).
+
+## In game
+
+| A Void Shield proc + 7 stacks | 10 stacks: maximum power |
+| :---: | :---: |
+| <img src="docs/screenshots/gallery_1_7_stacks.png" alt="The void vortex at 7 stacks, next to the character" width="400"> | <img src="docs/screenshots/gallery_2_10_stacks.png" alt="The purple phoenix at 10 stacks, next to the character" width="400"> |
 
 ## Soundboard
 
