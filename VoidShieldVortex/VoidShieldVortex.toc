@@ -1,0 +1,10 @@
+## Interface: 120105, 120100, 120001
+## Title: |cffb070ffVoid Shield|r Lite
+## Notes: A glowing void vortex + chime when you have a Void Shield proc AND 7+ Weal and Woe. At 10 it supercharges into a purple phoenix with a jackpot cue. Soundboard: chimes, birdsong, ocean.
+## Author: Orion
+## Version: 6.0.0
+## SavedVariables: VoidShieldVortexDB
+## IconTexture: Interface\AddOns\VoidShieldVortex\media\art\icon
+## AddonCompartmentFunc: VoidShieldVortex_OnAddonCompartmentClick
+
+VoidShieldLite.lua
