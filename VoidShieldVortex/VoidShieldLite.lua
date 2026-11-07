@@ -4,8 +4,8 @@
     proc + 7 stacks  : a glowing cartoon void vortex pops up and spins, the stack count on its
                        left edge, and one chime
     proc + 10 stacks : it supercharges into a purple phoenix (wings, flames, lightning, sparks, a
-                       strong glow) and the chime cascades upward three times (or the birdsong /
-                       ocean version, picked on the soundboard: /vsv soundboard)
+                       strong glow) and a bright music-box run plays (or the birdsong / ocean version,
+                       picked on the soundboard: /vsv soundboard)
   No proc = no square, no sound. 8 and 9 are silent. Nothing in the addon runs every frame: the
   effects are the game's own animations, and they only play while the square is showing.
 
@@ -41,9 +41,9 @@ local DEFAULTS = { threshold = 7, sound = true, maxSound = true, channel = "Mast
 -- cue (10 stacks). Files: media/sounds/<pack>_ready.ogg and <pack>_max.ogg. All in G major.
 local SOUNDBOARD = {
 	{ key = "chimes", name = "Chimes",
-	  about = "harp glissando; at 10 it climbs root, fifth, octave into sparkles over a G major chord" },
+	  about = "cartoon music-box notes rising in G; at 10 a two-octave run into a bright ta-DING" },
 	{ key = "birdsong", name = "Birdsong",
-	  about = "a songbird's call; at 10 the phrase climbs three times into a trill and a dawn chorus" },
+	  about = "real wrens: a sweet whistled call; at 10 a Eurasian wren's sharp, bright song" },
 	{ key = "ocean", name = "Ocean",
 	  about = "sonar ping and echo; at 10 rising pings (G, D, G), dolphins and a whale call" },
 }
@@ -896,7 +896,7 @@ SlashCmdList.VOIDSHIELDLITE = function(msg)
 			Print(("square + chime at a Void Shield proc and %d+ stacks"):format(db.threshold))
 		else Print("pick a number from 3 to 10") end
 	elseif cmd == "test" then
-		Print("test: 7 stacks without a proc (nothing), Mind Blast proc (chime), Penance to 10 (phoenix!), then your shield")
+		Print(("test with the %s sounds (/vsv soundboard to change): 7 stacks without a proc (nothing), Mind Blast proc (ready cue), Penance to 10 (phoenix!), then your shield"):format(SoundPack().name))
 		-- each step: stacks, proc, how long it lasts (the 10-stack phoenix gets a good look)
 		local steps = { { ww = 7, vs = 0, t = 2 }, { ww = 7, vs = 1, t = 2.5 }, { ww = 10, vs = 1, t = 6 }, { ww = 0, vs = 0, t = 0.5 } }
 		local at = 0

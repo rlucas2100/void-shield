@@ -11,7 +11,7 @@ Darkness) AND Weal and Woe is at 7 or more stacks.
 proc + 7 stacks   : a glowing cartoon void vortex pops up and slowly spins, and one chime
 proc + 10 stacks  : it supercharges into a purple phoenix (wings unfurl, violet flames,
                     lightning, sparks, a strong pulsing glow, a shockwave), the vortex spins
-                    fast, and the chime cascades upward three times like a jackpot
+                    fast, and a bright music-box run plays
 no proc           : no square, no sound (even at 10 stacks)
 8 and 9           : silent
 ```
@@ -27,13 +27,14 @@ Each sound pack has two cues: **ready** (your threshold, 7 by default) and **max
 `/vsv soundboard` lists them; `/vsv soundboard 2` picks one and plays both cues so you can hear it.
 
 ```
-1. Chimes    harp glissando; at 10 it climbs root, fifth, octave into sparkles over a G major chord
-2. Birdsong  a songbird's call; at 10 the phrase climbs three times into a trill and a dawn chorus
+1. Chimes    cartoon music-box notes rising in G; at 10 a two-octave run into a bright ta-DING
+2. Birdsong  real wrens: a sweet whistled call; at 10 a Eurasian wren's sharp, bright song
 3. Ocean     sonar ping and echo; at 10 rising pings (G, D, G), dolphins and a whale call
 ```
 
-All three are in G major, so they sit nicely together. The max cue gently fades out the ready cue
-if it's still ringing. (`/vsv soundpack`, `/vsv sounds` and `/vsv audio` work too.)
+The chimes and ocean cues are in G major, and the birdsong call is tuned to sit with them. The max
+cue gently fades out the ready cue if it's still ringing. (`/vsv soundpack`, `/vsv sounds` and
+`/vsv audio` work too.)
 
 ## Install
 
@@ -102,6 +103,15 @@ draw the art, render the soundboard and build the release zip are in [`tools/`](
 | Void vortex (7+) | Supercharged (10) | Frame | Phoenix wings | Flame crown |
 | :---: | :---: | :---: | :---: | :---: |
 | <img src="docs/textures/vortex.png" width="96"> | <img src="docs/textures/vortex_max.png" width="96"> | <img src="docs/textures/frame.png" width="96"> | <img src="docs/textures/wings.png" width="192"> | <img src="docs/textures/flames1.png" width="96"> |
+
+## Sound credits
+
+The chimes and ocean cues are made for this addon. The Birdsong pack uses two real field
+recordings from Wikimedia Commons, both free to use (details in
+[`tools/sources/`](tools/sources/README.md)):
+
+- Rufous-naped wren, recorded by Nosferattus (CC0)
+- Eurasian wren (*Troglodytes troglodytes*), recorded by Sogning Norway (public domain)
 
 ## Author
 
